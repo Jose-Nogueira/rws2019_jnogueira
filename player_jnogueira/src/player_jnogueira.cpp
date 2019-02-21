@@ -7,6 +7,41 @@ using namespace std;
 #pragma region Player
 namespace jnogueira_ns
 {
+class Team
+{
+public:
+  Team(string Team_name_)
+  {
+	Team_name = Team_name_;
+	ros::NodeHandle n;
+	n.getParam("/team_" + Team_name, players);
+  }
+  void addPlayer(string name)
+  {
+	players.push_back(name);
+  }
+  void printInfo()
+  {
+	ROS_INFO_STREAM("Team " << Team_name);
+	for (size_t i = 0; i < players.size(); i++)
+	{
+	  ROS_INFO_STREAM(players[i]);
+	}
+  }
+  bool playerBelongsToTeam(string name)
+  {
+	for (size_t i = 0; i < players.size(); i++)
+	{
+	  if (players[i] == name)
+		return true;
+	}
+	return false;
+  }
+  string Team_name;
+
+private:
+  vector<string> players;
+};
 class Player
 {
 public:
@@ -23,7 +58,7 @@ public:
 	}
 	else
 	{
-	  cerr << "Cannot set team name " << name << endl;
+	  ROS_ERROR_STREAM("Cannot set team name ");
 	}
   }
   void setTeamName(int index)
@@ -50,43 +85,42 @@ private:
 class MyPlayer : public Player
 {
 public:
-  MyPlayer(string player_name_, string team) : Player(player_name_)
+  MyPlayer(string player_name_) : Player(player_name_)
   {
-	setTeamName(team);
-  }
-};
-class Team
-{
-public:
-  Team(string Team_name_)
-  {
-	Team_name = Team_name_;
-  }
-  void addPlayer(string name)
-  {
-	players.push_back(name);
-  }
-  void printInfo()
-  {
-	cout << "Team " << Team_name << endl;
-	for (size_t i = 0; i < players.size(); i++)
+	team_red = (boost::shared_ptr<Team>)new Team("red");
+	team_blue = (boost::shared_ptr<Team>)new Team("blue");
+	team_green = (boost::shared_ptr<Team>)new Team("green");
+	if (team_red->playerBelongsToTeam(player_name_))
 	{
-	  cout << players[i] << endl;
+	  team_hunter = team_blue;
+	  team_my = team_red;
+	  team_preys = team_green;
 	}
-  }
-  bool playerBelongsToTeam(string name)
-  {
-	for (size_t i = 0; i < players.size(); i++)
+	else if (team_green->playerBelongsToTeam(player_name_))
 	{
-	  if (players[i] == name)
-		return true;
+	  team_hunter = team_red;
+	  team_my = team_green;
+	  team_preys = team_blue;
 	}
-	return false;
+	else if (team_blue->playerBelongsToTeam(player_name_))
+	{
+	  team_hunter = team_green;
+	  team_my = team_blue;
+	  team_preys = team_red;
+	}
+	else
+	{
+	  ROS_ERROR_STREAM("Player not have team");
+	}
+	setTeamName(team_my->Team_name);
   }
-  string Team_name;
 
-private:
-  vector<string> players;
+  boost::shared_ptr<Team> team_red;
+  boost::shared_ptr<Team> team_blue;
+  boost::shared_ptr<Team> team_green;
+  boost::shared_ptr<Team> team_hunter;
+  boost::shared_ptr<Team> team_my;
+  boost::shared_ptr<Team> team_preys;
 };
 }
 #pragma endregion
@@ -96,29 +130,18 @@ int main(int argc, char *argv[])
   ros::init(argc, argv, "player_jnogueira");
   ros::NodeHandle nn;
 
-  jnogueira_ns::MyPlayer player("José Nogueira", "red");
+  jnogueira_ns::MyPlayer player("jnogueira");
 
-  jnogueira_ns::Team team("red");
-  team.addPlayer("José Nogueira");
-  team.addPlayer("wesxdcfghbjkm");
-
-  cout << "Name: " << player.player_name << "\tTeam: " << player.getTeam() << endl;
-
-  string name;
-  cin >> name;
-  cout << name;
-  if (team.playerBelongsToTeam(name))
-	cout << "sim" << endl;
-  else
-	cout << "não" << endl;
-
-  team.printInfo();
+  player.team_red->printInfo();
+  cout << endl;
+  player.team_blue->printInfo();
+  cout << endl;
+  player.team_green->printInfo();
 
   ros::Rate l(1);
-  int i = 0;
   while (ros::ok())
   {
-	cout << i++ << "\tName: " << player.player_name << "\tTeam: " << player.getTeam() << endl;
+	ROS_INFO_STREAM("\tName: " + player.player_name + "\tTeam: " + player.getTeam());
 	l.sleep();
   }
 

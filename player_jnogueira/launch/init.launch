@@ -1,0 +1,5 @@
+<launch>
+    <rosparam command="load" file="$(find player_jnogueira)/param/params.yaml"/>
+    <node pkg="player_jnogueira" name="player" type="player_jnogueira" output="screen" respawn="true">
+    </node>
+</launch>
