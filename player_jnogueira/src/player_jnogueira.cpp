@@ -146,6 +146,9 @@ public:
 	  q.setRPY(0, 0, dt);
 	  transform1.setRotation(q);
 	  transform1 = transform * transform1;
+	  double x = transform1.getOrigin().x();
+	  double y = transform1.getOrigin().y();
+	  transform1.setOrigin(tf::Vector3(std::min(x, 5.0), std::min(y, 5.0), 0));
 	  br.sendTransform(tf::StampedTransform(transform1, ros::Time::now(), "world", player_name));
 	}
 	catch (tf::TransformException ex)
