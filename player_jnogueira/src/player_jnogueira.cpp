@@ -178,7 +178,7 @@ public:
 	  marker.pose.orientation.z = 0.0;
 	  marker.pose.orientation.w = 1.0;
 
-	  marker.scale.x = marker.scale.y = marker.scale.z = 0.3;
+	  marker.scale.x = marker.scale.y = marker.scale.z = 0.6;
 
 	  marker.color.r = 1.0f;
 	  marker.color.g = 0.0f;
@@ -195,7 +195,7 @@ public:
 	  marker1.id = 1;
 	  marker1.type = visualization_msgs::Marker::SPHERE;
 	  marker1.action = visualization_msgs::Marker::ADD;
-	  marker1.pose.position.x = 0.2;
+	  marker1.pose.position.x = 0.3;
 	  marker1.pose.position.y = 0.0;
 	  marker1.pose.position.z = 0;
 	  marker1.pose.orientation.x = -M_PI / 4;
@@ -203,8 +203,8 @@ public:
 	  marker1.pose.orientation.z = 0.0;
 	  marker1.pose.orientation.w = 1.0;
 
-	  marker1.scale.x = 0.4;
-	  marker1.scale.y = marker1.scale.z = 0.2;
+	  marker1.scale.x = 0.6;
+	  marker1.scale.y = marker1.scale.z = 0.4;
 
 	  marker1.color.r = 1.0f;
 	  marker1.color.g = 0.0f;
