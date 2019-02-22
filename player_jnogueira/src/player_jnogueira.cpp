@@ -10,7 +10,7 @@ using namespace std;
 
 float randomizePosition()
 {
-  srand(68497 * time(NULL));  // set initial seed value to 5323
+  srand(6849 * time(NULL));  // set initial seed value to 5323
   return (((double)rand() / (RAND_MAX)) - 0.5) * 10;
 }
 
@@ -126,10 +126,10 @@ public:
   }
   void makeAPlayCallback(rws2019_msgs::MakeAPlayConstPtr make_a_play)
   {
-	ROS_INFO_STREAM("Cat_vel: " << make_a_play->cat);
-	ROS_INFO_STREAM("Dog_vel: " << make_a_play->dog);
-	ROS_INFO_STREAM("Cheetah_vel: " << make_a_play->cheetah);
-	ROS_INFO_STREAM("Turtle_vel: " << make_a_play->turtle);
+	// ROS_INFO_STREAM("Cat_vel: " << make_a_play->cat);
+	// ROS_INFO_STREAM("Dog_vel: " << make_a_play->dog);
+	// ROS_INFO_STREAM("Cheetah_vel: " << make_a_play->cheetah);
+	// ROS_INFO_STREAM("Turtle_vel: " << make_a_play->turtle);
 
 	///**********
 	tf::Transform transform1;
@@ -138,7 +138,7 @@ public:
 	try
 	{
 	  listener.lookupTransform("/world", "/" + player_name, ros::Time(0), transform);
-	  float dx = 0.05;
+	  float dx = make_a_play->turtle;
 	  float dt = M_PI / 100;
 
 	  transform1.setOrigin(tf::Vector3(dx, 0, 0));
@@ -150,13 +150,14 @@ public:
 	}
 	catch (tf::TransformException ex)
 	{
-	  ROS_ERROR("%s", ex.what());
-	  ros::Duration(0.1).sleep();
+	  ROS_ERROR("%s  --  define random pose", ex.what());
 
 	  transform1.setOrigin(tf::Vector3(randomizePosition(), randomizePosition(), 0));
 	  tf::Quaternion q;
-	  q.setRPY(0, 0, 0);
+	  q.setRPY(0, 0, M_PI);
+	  transform1.setRotation(q);
 	  br.sendTransform(tf::StampedTransform(transform1, ros::Time::now(), "world", player_name));
+	  ros::Duration(0.1).sleep();
 	}
   }
 
