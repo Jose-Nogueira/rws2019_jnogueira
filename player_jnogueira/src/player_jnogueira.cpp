@@ -3,6 +3,7 @@
 #include <rws2019_msgs/MakeAPlay.h>
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
+#include <visualization_msgs/Marker.h>
 #include <iostream>
 #include <vector>
 
@@ -125,6 +126,9 @@ public:
 	  ROS_ERROR_STREAM("Player not have team");
 	}
 	setTeamName(team_my->Team_name);
+	ros::NodeHandle n;
+	vr_marker = (boost::shared_ptr<ros::Publisher>)new ros::Publisher();
+	(*vr_marker) = n.advertise<visualization_msgs::Marker>("player_names", 1);
   }
   void makeAPlayCallback(rws2019_msgs::MakeAPlayConstPtr make_a_play)
   {
@@ -156,6 +160,63 @@ public:
 	  y = std::max(y, -area_size);
 	  transform1.setOrigin(tf::Vector3(x, y, 0));
 	  br.sendTransform(tf::StampedTransform(transform1, ros::Time::now(), "world", player_name));
+
+	  visualization_msgs::Marker marker;
+#pragma region name
+	  marker.header.frame_id = player_name;
+	  marker.header.stamp = ros::Time::now();
+	  marker.ns = "basic_shapes";
+	  marker.text = player_name;
+	  marker.id = 0;
+	  marker.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+	  marker.action = visualization_msgs::Marker::ADD;
+	  marker.pose.position.x = 0;
+	  marker.pose.position.y = 0;
+	  marker.pose.position.z = 0.2;
+	  marker.pose.orientation.x = 0.0;
+	  marker.pose.orientation.y = 0.0;
+	  marker.pose.orientation.z = 0.0;
+	  marker.pose.orientation.w = 1.0;
+
+	  marker.scale.x = marker.scale.y = marker.scale.z = 0.3;
+
+	  marker.color.r = 1.0f;
+	  marker.color.g = 0.0f;
+	  marker.color.b = 0.0f;
+	  marker.color.a = 1.0;
+
+	  marker.lifetime = ros::Duration();
+#pragma endregion
+	  visualization_msgs::Marker marker1;
+#pragma regi1on forma
+	  marker1.header.frame_id = player_name;
+	  marker1.header.stamp = ros::Time::now();
+	  marker1.ns = "basic_shapes";
+	  marker1.id = 1;
+	  marker1.type = visualization_msgs::Marker::SPHERE;
+	  marker1.action = visualization_msgs::Marker::ADD;
+	  marker1.pose.position.x = 0.2;
+	  marker1.pose.position.y = 0.0;
+	  marker1.pose.position.z = 0;
+	  marker1.pose.orientation.x = -M_PI / 4;
+	  marker1.pose.orientation.y = 0.0;
+	  marker1.pose.orientation.z = 0.0;
+	  marker1.pose.orientation.w = 1.0;
+
+	  marker1.scale.x = 0.4;
+	  marker1.scale.y = marker1.scale.z = 0.2;
+
+	  marker1.color.r = 1.0f;
+	  marker1.color.g = 0.0f;
+	  marker1.color.b = 0.0f;
+	  marker1.color.a = 1.0;
+
+	  marker1.lifetime = ros::Duration();
+
+#pragma endregion
+
+	  (*vr_marker).publish(marker);
+	  (*vr_marker).publish(marker1);
 	}
 	catch (tf::TransformException ex)
 	{
@@ -178,6 +239,7 @@ public:
   boost::shared_ptr<Team> team_preys;
   tf::TransformBroadcaster br;
   tf::TransformListener listener;
+  boost::shared_ptr<ros::Publisher> vr_marker;
 };
 }
 #pragma endregion
