@@ -134,6 +134,12 @@ public:
 	ros::NodeHandle n;
 	vr_marker = (boost::shared_ptr<ros::Publisher>)new ros::Publisher();
 	(*vr_marker) = n.advertise<visualization_msgs::Marker>("player_names", 1);
+	tf::Transform transform1;
+	transform1.setOrigin(tf::Vector3(randomizePosition(), randomizePosition(), 0));
+	tf::Quaternion q;
+	q.setRPY(0, 0, M_PI);
+	transform1.setRotation(q);
+	br.sendTransform(tf::StampedTransform(transform1, ros::Time::now(), "world", player_name));
   }
 
   std::tuple<float, float> getDistancePlayer(string other_player)
@@ -175,7 +181,7 @@ public:
 		dx = dx * cos(M_PI / 2 - a);
 	  }
 
-	  d += dx * (a / max_rotation_vel);
+	  // d += dx * (a / max_rotation_vel);
 
 	  if (val > d)
 	  {
@@ -195,7 +201,6 @@ public:
 	// ROS_INFO_STREAM("Turtle_vel: " << make_a_play->turtle);
 
 	///**********
-	tf::Transform transform1;
 
 	tf::StampedTransform transform;
 	try
@@ -204,24 +209,25 @@ public:
 
 	  tuple<string, float, float> catch_ = target(make_a_play);
 
-	  float dx = (float)std::get<1>(catch_);
-	  float dt = (float)std::get<2>(catch_);
+	  float dx = (float)std::get<1>(catch_) * 0;
+	  float a = (float)std::get<2>(catch_) * 0;
 
-	  dt = dt > max_rotation_vel ? max_rotation_vel : dt;
-	  dx = dx > make_a_play->turtle ? make_a_play->turtle : dx;
-	  transform1.setOrigin(tf::Vector3(dx, 0, 0));
+	  float dx_max = make_a_play->turtle;
+	  dx > dx_max ? dx = dx_max : dx = dx;
+
+	  double amax = M_PI / 30;
+	  fabs(a) > fabs(amax) ? a = amax * a / fabs(a) : a = a;
+
+	  // STEP 3: define local movement
+	  tf::Transform T1;
+	  T1.setOrigin(tf::Vector3(dx, 0.0, 0.0));
 	  tf::Quaternion q;
-	  q.setRPY(0, 0, dt);
-	  transform1.setRotation(q);
-	  transform1 = transform * transform1;
-	  double x = transform1.getOrigin().x();
-	  double y = transform1.getOrigin().y();
-	  x = std::min(x, area_size);
-	  x = std::max(x, -area_size);
-	  y = std::min(y, area_size);
-	  y = std::max(y, -area_size);
-	  transform1.setOrigin(tf::Vector3(x, y, 0));
-	  br.sendTransform(tf::StampedTransform(transform1, ros::Time::now(), "world", player_name));
+	  q.setRPY(0, 0, a);
+	  T1.setRotation(q);
+
+	  // STEP 4: define global movement
+	  tf::Transform Tglobal = transform * T1;
+	  br.sendTransform(tf::StampedTransform(Tglobal, ros::Time::now(), "world", player_name));
 
 	  visualization_msgs::Marker marker;
 #pragma region name
@@ -283,12 +289,6 @@ public:
 	catch (tf::TransformException ex)
 	{
 	  ROS_ERROR("%s  --  define random pose", ex.what());
-
-	  transform1.setOrigin(tf::Vector3(randomizePosition(), randomizePosition(), 0));
-	  tf::Quaternion q;
-	  q.setRPY(0, 0, M_PI);
-	  transform1.setRotation(q);
-	  br.sendTransform(tf::StampedTransform(transform1, ros::Time::now(), "world", player_name));
 	  ros::Duration(0.1).sleep();
 	}
   }
