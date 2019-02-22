@@ -127,9 +127,9 @@ public:
 
 	///**********
 	tf::Transform transform1;
-	transform1.setOrigin(tf::Vector3(4 * sin(a), 4 * cos(a), 0));
+	transform1.setOrigin(tf::Vector3(4 * sin(-a), 4 * cos(-a), 0));
 	tf::Quaternion q;
-	q.setRPY(0, 0, a);
+	q.setRPY(0, 0, a-M_PI);
 	a = a + M_PI / 40;
 	transform1.setRotation(q);
 	br.sendTransform(tf::StampedTransform(transform1, ros::Time::now(), "world", player_name));
