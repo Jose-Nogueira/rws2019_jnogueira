@@ -116,6 +116,7 @@ class MyPlayer : public Player
 		}
 		setTeamName(team_my->Team_name);
 	}
+	double a = 0;
 	void makeAPlayCallback(rws2019_msgs::MakeAPlayConstPtr make_a_play)
 	{
 		ROS_INFO_STREAM("Cat_vel: " << make_a_play->cat);
@@ -127,7 +128,8 @@ class MyPlayer : public Player
 		tf::Transform transform1;
 		transform1.setOrigin(tf::Vector3(4, -3, 0));
 		tf::Quaternion q;
-		q.setRPY(0, 0, 0);
+		q.setRPY(0, 0, a);
+		a = a + M_PI / 20;
 		transform1.setRotation(q);
 		br.sendTransform(tf::StampedTransform(transform1, ros::Time::now(), "world", player_name));
 	}
