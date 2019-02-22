@@ -3,6 +3,7 @@
 #include <tf/transform_broadcaster.h>
 #include <iostream>
 #include <vector>
+#include <math.h>
 
 using namespace std;
 
@@ -126,7 +127,7 @@ class MyPlayer : public Player
 
 		///**********
 		tf::Transform transform1;
-		transform1.setOrigin(tf::Vector3(4, -3, 0));
+		transform1.setOrigin(tf::Vector3(4 * sin(a), 4 * cos(a), 0));
 		tf::Quaternion q;
 		q.setRPY(0, 0, a);
 		a = a + M_PI / 20;
