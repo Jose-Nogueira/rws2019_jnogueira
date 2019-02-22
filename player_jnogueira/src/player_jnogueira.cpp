@@ -2,10 +2,17 @@
 #include <ros/ros.h>
 #include <rws2019_msgs/MakeAPlay.h>
 #include <tf/transform_broadcaster.h>
+#include <tf/transform_listener.h>
 #include <iostream>
 #include <vector>
 
 using namespace std;
+
+float randomizePosition()
+{
+  srand(68497 * time(NULL));  // set initial seed value to 5323
+  return (((double)rand() / (RAND_MAX)) - 0.5) * 10;
+}
 
 #pragma region Player
 namespace jnogueira_ns
@@ -117,7 +124,6 @@ public:
 	}
 	setTeamName(team_my->Team_name);
   }
-  double a = 0;
   void makeAPlayCallback(rws2019_msgs::MakeAPlayConstPtr make_a_play)
   {
 	ROS_INFO_STREAM("Cat_vel: " << make_a_play->cat);
@@ -127,12 +133,31 @@ public:
 
 	///**********
 	tf::Transform transform1;
-	transform1.setOrigin(tf::Vector3(4 * sin(-a), 4 * cos(-a), 0));
-	tf::Quaternion q;
-	q.setRPY(0, 0, a-M_PI);
-	a = a + M_PI / 40;
-	transform1.setRotation(q);
-	br.sendTransform(tf::StampedTransform(transform1, ros::Time::now(), "world", player_name));
+
+	tf::StampedTransform transform;
+	try
+	{
+	  listener.lookupTransform("/world", "/" + player_name, ros::Time(0), transform);
+	  float dx = 0.05;
+	  float dt = M_PI / 100;
+
+	  transform1.setOrigin(tf::Vector3(dx, 0, 0));
+	  tf::Quaternion q;
+	  q.setRPY(0, 0, dt);
+	  transform1.setRotation(q);
+	  transform1 = transform * transform1;
+	  br.sendTransform(tf::StampedTransform(transform1, ros::Time::now(), "world", player_name));
+	}
+	catch (tf::TransformException ex)
+	{
+	  ROS_ERROR("%s", ex.what());
+	  ros::Duration(0.1).sleep();
+
+	  transform1.setOrigin(tf::Vector3(randomizePosition(), randomizePosition(), 0));
+	  tf::Quaternion q;
+	  q.setRPY(0, 0, 0);
+	  br.sendTransform(tf::StampedTransform(transform1, ros::Time::now(), "world", player_name));
+	}
   }
 
   boost::shared_ptr<Team> team_red;
@@ -142,6 +167,7 @@ public:
   boost::shared_ptr<Team> team_my;
   boost::shared_ptr<Team> team_preys;
   tf::TransformBroadcaster br;
+  tf::TransformListener listener;
 };
 }
 #pragma endregion
@@ -161,7 +187,7 @@ int main(int argc, char *argv[])
 
   ros::Subscriber sub = nn.subscribe("/make_a_play", 100, &jnogueira_ns::MyPlayer::makeAPlayCallback, &player);
 
-  ros::Rate l(10);
+  ros::Rate l(20);
   while (ros::ok())
   {
 	// ROS_INFO_STREAM("\tName: " + player.player_name + "\tTeam: " + player.getTeam());
