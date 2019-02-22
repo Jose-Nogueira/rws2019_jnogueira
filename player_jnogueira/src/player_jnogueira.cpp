@@ -6,6 +6,8 @@
 #include <iostream>
 #include <vector>
 
+#define area_size 5.0
+
 using namespace std;
 
 float randomizePosition()
@@ -148,7 +150,11 @@ public:
 	  transform1 = transform * transform1;
 	  double x = transform1.getOrigin().x();
 	  double y = transform1.getOrigin().y();
-	  transform1.setOrigin(tf::Vector3(std::min(x, 5.0), std::min(y, 5.0), 0));
+	  x = std::min(x, area_size);
+	  x = std::max(x, -area_size);
+	  y = std::min(y, area_size);
+	  y = std::max(y, -area_size);
+	  transform1.setOrigin(tf::Vector3(x, y, 0));
 	  br.sendTransform(tf::StampedTransform(transform1, ros::Time::now(), "world", player_name));
 	}
 	catch (tf::TransformException ex)
