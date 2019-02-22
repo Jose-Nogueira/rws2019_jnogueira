@@ -8,6 +8,7 @@
 #include <vector>
 
 #define area_size 5.0
+#define max_rotation_vel M_PI / 30
 
 using namespace std;
 
@@ -49,6 +50,10 @@ public:
 		return true;
 	}
 	return false;
+  }
+  vector<string> getPlayers()
+  {
+	return players;
   }
   string Team_name;
 
@@ -130,6 +135,58 @@ public:
 	vr_marker = (boost::shared_ptr<ros::Publisher>)new ros::Publisher();
 	(*vr_marker) = n.advertise<visualization_msgs::Marker>("player_names", 1);
   }
+
+  std::tuple<float, float> getDistancePlayer(string other_player)
+  {
+	tf::StampedTransform transform;
+	try
+	{
+	  listener.lookupTransform(player_name, other_player, ros::Time(0), transform);
+	}
+	catch (tf::TransformException ex)
+	{
+	  ROS_ERROR("%s", ex.what());
+	  ros::Duration(0.1).sleep();
+	  return { 10000.0, 0.0 };
+	}
+
+	float x = transform.getOrigin().x();
+	float y = transform.getOrigin().y();
+
+	float distance = sqrt(x * x + y * y);
+	float angl = atan2(y, x);
+
+	return tuple<float, float>{ distance, angl };
+  }
+
+  tuple<string, float, float> target(rws2019_msgs::MakeAPlayConstPtr make_a_play)
+  {
+	string player_target = "";
+	float val, a;
+	vector<string> p = team_preys->getPlayers();
+	for (size_t i = 0; i < p.size(); i++)
+	{
+	  tuple<float, float> tmp = getDistancePlayer(p[i]);
+	  float d = (float)std::get<0>(tmp);
+	  float a = (float)std::get<1>(tmp);
+	  float dx = make_a_play->turtle;
+	  if ((a > -M_PI / 2) && (a < M_PI / 2))
+	  {
+		dx = dx * cos(M_PI / 2 - a);
+	  }
+
+	  d += dx * (a / max_rotation_vel);
+
+	  if (val > d)
+	  {
+		player_target = p[i];
+		val = (float)std::get<0>(tmp);
+		a = (float)std::get<1>(tmp);
+	  }
+	}
+	return tuple<string, float, float>{ player_target, val, a };
+  }
+
   void makeAPlayCallback(rws2019_msgs::MakeAPlayConstPtr make_a_play)
   {
 	// ROS_INFO_STREAM("Cat_vel: " << make_a_play->cat);
@@ -144,9 +201,14 @@ public:
 	try
 	{
 	  listener.lookupTransform("/world", "/" + player_name, ros::Time(0), transform);
-	  float dx = make_a_play->turtle;
-	  float dt = M_PI / 100;
 
+	  tuple<string, float, float> catch_ = target(make_a_play);
+
+	  float dx = (float)std::get<1>(catch_);
+	  float dt = (float)std::get<2>(catch_);
+
+	  dt = dt > max_rotation_vel ? max_rotation_vel : dt;
+	  dx = dx > make_a_play->turtle ? make_a_play->turtle : dx;
 	  transform1.setOrigin(tf::Vector3(dx, 0, 0));
 	  tf::Quaternion q;
 	  q.setRPY(0, 0, dt);
