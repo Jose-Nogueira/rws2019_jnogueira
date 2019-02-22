@@ -1,5 +1,6 @@
 #include <ros/ros.h>
 #include <rws2019_msgs/MakeAPlay.h>
+#include <tf/transform_broadcaster.h>
 #include <iostream>
 #include <vector>
 
@@ -10,7 +11,7 @@ namespace jnogueira_ns
 {
 class Team
 {
-public:
+  public:
 	Team(string Team_name_)
 	{
 		Team_name = Team_name_;
@@ -40,12 +41,12 @@ public:
 	}
 	string Team_name;
 
-private:
+  private:
 	vector<string> players;
 };
 class Player
 {
-public:
+  public:
 	Player(string player_name_)
 	{
 		player_name = player_name_;
@@ -79,13 +80,13 @@ public:
 	}
 	string player_name;
 
-private:
+  private:
 	int a;
 	string team;
 };
 class MyPlayer : public Player
 {
-public:
+  public:
 	MyPlayer(string player_name_) : Player(player_name_)
 	{
 		team_red = (boost::shared_ptr<Team>)new Team("red");
@@ -121,6 +122,14 @@ public:
 		ROS_INFO_STREAM("Dog_vel: " << make_a_play->dog);
 		ROS_INFO_STREAM("Cheetah_vel: " << make_a_play->cheetah);
 		ROS_INFO_STREAM("Turtle_vel: " << make_a_play->turtle);
+
+		///**********
+		tf::Transform transform1;
+		transform1.setOrigin(tf::Vector3(4, -3, 0));
+		tf::Quaternion q;
+		q.setRPY(0, 0, 0);
+		transform1.setRotation(q);
+		br.sendTransform(tf::StampedTransform(transform1, ros::Time::now(), "world", player_name));
 	}
 
 	boost::shared_ptr<Team> team_red;
@@ -129,6 +138,7 @@ public:
 	boost::shared_ptr<Team> team_hunter;
 	boost::shared_ptr<Team> team_my;
 	boost::shared_ptr<Team> team_preys;
+	tf::TransformBroadcaster br;
 };
 }
 #pragma endregion
