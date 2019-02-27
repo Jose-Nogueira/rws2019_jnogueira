@@ -299,7 +299,7 @@ public:
 		}
 		dx = 10;
 	  }
-	  if ((id % 4) == 0)
+	  if ((id % 5) == 0)
 	  {
 		msg = "run...run " + get<0>(catch_) + "!! so slow" + to_string(id);
 	  }
@@ -418,7 +418,7 @@ public:
 	  marker1.lifetime = ros::Duration();
 
 #pragma endregion
-	  if ((id % 4) == 0)
+	  if ((id % 5) == 0)
 	  {
 		vr_marker->publish(marker);
 	  }
