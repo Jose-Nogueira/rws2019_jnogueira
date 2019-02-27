@@ -6,9 +6,9 @@
 #include <iostream>
 #include <vector>
 
-#define area_size 5.0
+#define area_size 5.5
 #define max_rotation_vel M_PI / 30
-#define max_d_killer 1
+#define max_d_killer 4
 
 using namespace std;
 
@@ -283,17 +283,23 @@ public:
 	  auto killer_d = killer(make_a_play->blue_alive);
 	  float k_d = (float)get<1>(killer_d);
 	  float k_a = (float)get<2>(killer_d);
-	  if (k_d < 4)
+	  if (k_d < max_d_killer)
 	  {
 		if (fabs(k_a) < (2 * M_PI / 3))
 		{
 		  if (k_a > 0)
 		  {
-			a = -M_PI / 2;
+			if (a > 0)
+			{
+			  a = -M_PI / 2;
+			}
 		  }
 		  else
 		  {
-			a = M_PI / 2;
+			if (a < 0)
+			{
+			  a = M_PI / 2;
+			}
 		  }
 		  dx = 0;
 		}
@@ -323,9 +329,9 @@ public:
 		{
 		  a = (a + aa < (M_PI / 2)) ? -M_PI / 4 : a;
 		}
-		if (k_d < 4)
+		dx = 0;
+		if (k_d < max_d_killer)
 		{
-		  dx = 0;
 		  if ((fabs(aa) - fabs(k_a)) > 0)
 		  {
 			if (k_a > 0)
@@ -382,7 +388,7 @@ public:
 	  marker.pose.orientation.y = 0.0;
 	  marker.pose.orientation.z = 0.0;
 	  marker.pose.orientation.w = 1.0;
-
+	  marker.frame_locked = true;
 	  marker.scale.x = marker.scale.y = marker.scale.z = 0.4;
 
 	  marker.color.r = 0.0f;
