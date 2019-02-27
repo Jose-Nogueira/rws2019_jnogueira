@@ -8,7 +8,7 @@
 
 #define area_size 7.5
 #define max_rotation_vel M_PI / 30
-#define max_d_killer 5
+#define max_d_killer 4
 
 using namespace std;
 
