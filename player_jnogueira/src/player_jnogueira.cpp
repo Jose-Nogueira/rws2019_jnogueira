@@ -6,7 +6,7 @@
 #include <iostream>
 #include <vector>
 
-#define area_size 6.5
+#define area_size 7.5
 #define max_rotation_vel M_PI / 30
 #define max_d_killer 5
 
@@ -425,10 +425,10 @@ public:
 	  marker1.lifetime = ros::Duration();
 
 #pragma endregion
-	  if ((id % 5) == 0)
+	  /*if ((id % 5) == 0)
 	  {
 		vr_marker->publish(marker);
-	  }
+	  }*/
 	  vr_marker->publish(marker1);
 
 	  tt += 0.05;
