@@ -14,6 +14,8 @@ find_package(catkin REQUIRED COMPONENTS
   rws2019_msgs
   tf
   visualization_msgs
+  pcl_ros
+  pcl_conversions
 )
 
 ## System dependencies are found with CMake's conventions
@@ -108,7 +110,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES player_jnogueira
-  CATKIN_DEPENDS roscpp rospy std_msgs rws2019_msgs
+  CATKIN_DEPENDS roscpp rospy std_msgs rws2019_msgs pcl_ros
 #  DEPENDS system_lib
 )
 

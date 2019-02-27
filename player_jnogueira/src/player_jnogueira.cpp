@@ -1,3 +1,6 @@
+#include <pcl/conversions.h>
+#include <pcl_conversions/pcl_conversions.h>
+#include <pcl_ros/point_cloud.h>
 #include <ros/ros.h>
 #include <rws2019_msgs/MakeAPlay.h>
 #include <tf/transform_broadcaster.h>
@@ -5,10 +8,13 @@
 #include <visualization_msgs/Marker.h>
 #include <iostream>
 #include <vector>
+#include "sensor_msgs/PointCloud.h"
 
 #define area_size 7.5
 #define max_rotation_vel M_PI / 30
 #define max_d_killer 4
+
+typedef pcl::PointCloud<pcl::PointXYZ> PointCloud;
 
 using namespace std;
 
@@ -252,6 +258,10 @@ public:
   {
 	return getDistancePlayer("world");
   }
+  void pc_subscriber(const PointCloud::ConstPtr& pc)
+  {
+	m_pc = pc;
+  }
 
   void makeAPlayCallback(rws2019_msgs::MakeAPlayConstPtr make_a_play)
   {
@@ -291,7 +301,11 @@ public:
 		  {
 			if (a > 0)
 			{
-			  a = -M_PI / 2;
+			  a = (-M_PI / 2);
+			}
+			else
+			{
+			  a = 0;
 			}
 		  }
 		  else
@@ -299,6 +313,10 @@ public:
 			if (a < 0)
 			{
 			  a = M_PI / 2;
+			}
+			else
+			{
+			  a = 0;
 			}
 		  }
 		  dx = 0;
@@ -343,6 +361,18 @@ public:
 			  a = M_PI / 2;
 			}
 			dx = 0.02;
+		  }
+		  if (k_d < 1)
+		  {
+			dx = 10;
+			if (aa > 0)
+			{
+			  a = -M_PI / 2;
+			}
+			else
+			{
+			  a = M_PI / 2;
+			}
 		  }
 		}
 	  }
@@ -429,7 +459,7 @@ public:
 	  {
 		vr_marker->publish(marker);
 	  }*/
-	  vr_marker->publish(marker1);
+	  // vr_marker->publish(marker1);
 
 	  tt += 0.05;
 	}
@@ -438,6 +468,10 @@ public:
 	  ROS_ERROR("%s", ex.what());
 	  ros::Duration(0.1).sleep();
 	}
+  }
+  bool img_service(rws2019_msgs::MakeAPlayConstPtr make_a_play)
+  {
+	return true;
   }
 
   boost::shared_ptr<Team> team_red;
@@ -449,13 +483,14 @@ public:
   tf::TransformBroadcaster br;
   tf::TransformListener listener;
   boost::shared_ptr<ros::Publisher> vr_marker;
+  PointCloud::ConstPtr m_pc;
   float tt;
   int id;
 };
 }
 #pragma endregion
 
-int main(int argc, char *argv[])
+int main(int argc, char* argv[])
 {
   ros::init(argc, argv, "jnogueira");
   ros::NodeHandle nn;
@@ -469,6 +504,10 @@ int main(int argc, char *argv[])
   player.team_green->printInfo();
 
   ros::Subscriber sub = nn.subscribe("/make_a_play", 100, &jnogueira_ns::MyPlayer::makeAPlayCallback, &player);
+
+  ros::Subscriber pc_ = nn.subscribe("/pc", 100, &jnogueira_ns::MyPlayer::pc_subscriber, &player);
+
+  // ros::ServiceServer sev = nn.advertiseService("service", &jnogueira_ns::MyPlayer::img_service, &player);
 
   ros::Rate l(20);
   while (ros::ok())
