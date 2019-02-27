@@ -6,9 +6,9 @@
 #include <iostream>
 #include <vector>
 
-#define area_size 5.5
+#define area_size 6.5
 #define max_rotation_vel M_PI / 30
-#define max_d_killer 4
+#define max_d_killer 5
 
 using namespace std;
 
@@ -319,7 +319,7 @@ public:
 	  float da = std::get<0>(arena);
 	  float aa = std::get<1>(arena);
 	  dx > dx_max ? dx = dx_max : dx = dx;
-	  if ((da + dx * sin(fabs(aa) - M_PI / 2)) >= 5.5 && (fabs(aa) + M_PI / 30) >= (M_PI / 2))
+	  if ((da + dx * sin(fabs(aa) - M_PI / 2)) >= area_size && (fabs(aa) + M_PI / 30) >= (M_PI / 2))
 	  {
 		if (aa >= (M_PI / 2))
 		{
@@ -388,7 +388,7 @@ public:
 	  marker.pose.orientation.y = 0.0;
 	  marker.pose.orientation.z = 0.0;
 	  marker.pose.orientation.w = 1.0;
-	  marker.frame_locked = true;
+	  // marker.frame_locked = true;
 	  marker.scale.x = marker.scale.y = marker.scale.z = 0.4;
 
 	  marker.color.r = 0.0f;
