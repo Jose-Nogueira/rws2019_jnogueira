@@ -8,6 +8,7 @@
 #include <visualization_msgs/Marker.h>
 #include <iostream>
 #include <vector>
+#include "rws2019_msgs/DoTheMath.h"
 //#include "sensor_msgs/PointCloud.h"
 
 #define area_size 7.5
@@ -469,6 +470,26 @@ public:
 			ros::Duration(0.1).sleep();
 		}
 	}
+	bool service(rws2019_msgs::DoTheMath::RequestType &req, rws2019_msgs::DoTheMath::Response &resp)
+	{
+		if (req.op == "+")
+		{
+			resp.result = req.a + req.b;
+		}
+		else if (req.op == "-")
+		{
+			resp.result = req.a - req.b;
+		}
+		else if (req.op == "*")
+		{
+			resp.result = req.a * req.b;
+		}
+		else if (req.op == "/")
+		{
+			resp.result = req.a / req.b;
+		}
+		return true;
+	}
 
 	boost::shared_ptr<Team> team_red;
 	boost::shared_ptr<Team> team_blue;
@@ -486,7 +507,7 @@ public:
 }
 #pragma endregion
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
 	ros::init(argc, argv, "jnogueira");
 	ros::NodeHandle nn;
@@ -503,7 +524,7 @@ int main(int argc, char* argv[])
 
 	// ros::Subscriber pc_ = nn.subscribe("/pc", 100, &jnogueira_ns::MyPlayer::pc_subscriber, &player);
 
-	// ros::ServiceServer sev = nn.advertiseService("service", &jnogueira_ns::MyPlayer::img_service, &player);
+	ros::ServiceServer sev = nn.advertiseService("do_the_math", &jnogueira_ns::MyPlayer::service, &player);
 
 	ros::Rate l(20);
 	while (ros::ok())
