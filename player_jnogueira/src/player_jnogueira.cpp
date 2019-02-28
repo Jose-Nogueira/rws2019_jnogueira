@@ -3,6 +3,7 @@
 // #include <pcl_ros/point_cloud.h>
 #include <ros/ros.h>
 #include <rws2019_msgs/MakeAPlay.h>
+#include <sound_play/sound_play.h>
 #include <tf/transform_broadcaster.h>
 #include <tf/transform_listener.h>
 #include <visualization_msgs/Marker.h>
@@ -139,6 +140,9 @@ public:
 		ros::NodeHandle n;
 		vr_marker = (boost::shared_ptr<ros::Publisher>)new ros::Publisher;
 		(*vr_marker) = n.advertise<visualization_msgs::Marker>("/bocas", 0);
+		sound_pub = (boost::shared_ptr<ros::Publisher>)new ros::Publisher;
+		(*sound_pub) = n.advertise<sound_play::SoundRequest>("/robotsound", 0);
+		last_time = ros::Time().toSec();
 		// tf::Transform transform1;
 		// transform1.setOrigin(tf::Vector3(randomizePosition(), randomizePosition(), 0));
 		// tf::Quaternion q;
@@ -289,6 +293,17 @@ public:
 
 			float dx = (float)std::get<1>(catch_);
 			float a = std::get<2>(catch_);
+			if (dx < 2 && (last_time < (ros::Time::now().toSec() - 5)))
+			{
+				last_time = ros::Time::now().toSec();
+				sound_play::SoundRequest tmp;
+				tmp.arg2 = "voice_kal_diphone";
+				tmp.arg = player_name + ", you are dead, " + std::get<0>(catch_);
+				tmp.volume = 1.0;
+				tmp.sound = -3;
+				tmp.command = 1;
+				sound_pub->publish(tmp);
+			}
 
 			// defesa
 			auto killer_d = killer(make_a_play->blue_alive);
@@ -500,6 +515,8 @@ public:
 	tf::TransformBroadcaster br;
 	tf::TransformListener listener;
 	boost::shared_ptr<ros::Publisher> vr_marker;
+	boost::shared_ptr<ros::Publisher> sound_pub;
+	float last_time = 0;
 	// PointCloud::ConstPtr m_pc;
 	float tt;
 	int id;
