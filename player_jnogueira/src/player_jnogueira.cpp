@@ -32,10 +32,17 @@ namespace jnogueira_ns
 class Team
 {
 public:
+	ros::Timer tt;
+	ros::NodeHandle n;
 	Team(string Team_name_)
 	{
 		Team_name = Team_name_;
-		ros::NodeHandle n;
+		// ros::NodeHandle n;
+		n.getParam("/team_" + Team_name, players);
+		tt = n.createTimer(ros::Duration(1), &Team::callback, this);
+	}
+	void callback(const ros::TimerEvent &e)
+	{
 		n.getParam("/team_" + Team_name, players);
 	}
 	void addPlayer(string name)
